@@ -8,8 +8,12 @@ HHOOK hook;
 FARPROC ShellProc;
 
 void ctrl_c(int sig) {
-    if (hook != NULL) {
+    fprintf(stdout, "Closing Edwm\n");
+    if (hook) {
         UnhookWindowsHookEx(hook);
+    }
+
+    if (edwmDLL) {
         FreeLibrary(edwmDLL);
     }
     exit(0);
@@ -35,14 +39,29 @@ int main() {
     hook = SetWindowsHookExW(WH_SHELL, (HOOKPROC)ShellProc, edwmDLL, 0);
 
     if (hook == NULL) {
-        fprintf(stderr, "Hook is null: %p", hook);
+        fprintf(stderr, "Hook is null: %p\n", hook);
         FreeLibrary(edwmDLL);
         UnhookWindowsHookEx(hook);
         return 1;
     }
-    printf("%d\n", hook);
+    fprintf(stdout, "Running Edwm -- It tiles all new created windows\n");
 
     signal(SIGINT, ctrl_c);
-    while (1) {}
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    fprintf(stdout, "Closing Edwm\n");
+
+    if (hook) {
+        UnhookWindowsHookEx(hook);
+    }
+
+    if (edwmDLL) {
+        FreeLibrary(edwmDLL);
+    }
+
     return 0;
 }

@@ -6,8 +6,11 @@ _declspec(dllexport) LRESULT CALLBACK ShellProc(
     WPARAM wParam,
     LPARAM lParam)
 {
+    if (nCode < 0) {
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
     if (nCode == HSHELL_WINDOWCREATED || nCode == HSHELL_WINDOWDESTROYED) {
-        TileWindows(NULL, MDITILE_HORIZONTAL, NULL, NULL, NULL);
+        TileWindows(GetDesktopWindow(), MDITILE_VERTICAL | MDITILE_SKIPDISABLED, NULL, NULL, NULL);
     }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
